@@ -3,7 +3,6 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
-const axios = require('axios');
 
 
 public_users.post("/register", (req, res) => {
@@ -21,51 +20,36 @@ public_users.post("/register", (req, res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/', async function (req, res) {
-  try {
-    const response = await axios.get('http://example.com/books');
-    res.json(response.data); 
-  } 
-  catch (error) {
-    res.status(500).json({ message: "Books not available" });
-  }
+public_users.get('/',function (req, res) {
+  return res.json(books);
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn', async (req, res) => {
-  const { isbn } = req.params;
-
-  try {
-    const response = await axios.get(`https://example.com/books/${isbn}`);
-    const book = response.data.items?.[0];
-    res.status(200).json(book);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching book by ISBN" });
-  }
-});
+public_users.get('/isbn/:isbn',function (req, res) {
+  let isbn = req.params.isbn;
+  let book = books[isbn]
+  return res.status(200).json(book);
+ });
   
 // Get book details based on author
-public_users.get('/author/:author', async (req, res) => {
-  const { author } = req.params;
-  try {
-    const response = await axios.get(`https://example.com/books/${author}`);
-    const books = response.data.author;
-    res.status(200).json(books);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching books by author" });
+public_users.get('/author/:author',function (req, res) {
+  let author = req.params.author;
+   for (let key in books) {
+    if (books[key].author === author) {
+      return res.status(200).json(books[key]);
+    }
   }
 });
 
 // Get all books based on title
-public_users.get('/title/:title', async (req, res) => {
-  const { title } = req.params;
-  try {
-    const response = await axios.get(`https://example.com/books/${title}`);
-    const books = response.data.title;
-    res.status(200).json(books);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching books by title" });
+public_users.get('/title/:title',function (req, res) {
+  let title = req.params.title;
+  for (let key in books) {
+    if (books[key].title === title) {
+      return res.status(200).json(books[key]);
+    }
   }
+  res.status(404);
 });
 
 //  Get book review
